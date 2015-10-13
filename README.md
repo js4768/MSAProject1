@@ -11,3 +11,7 @@ Docker notes:
 	Find ip: docker-machine ip machine_name
 	Restart machine: docker-machine restart machine_name
 	Configure machine after restart: eval $(docker-machine env machine_name)
+	Example router service running in docker:
+		docker build -t router .
+		docker run -d -p 40000:3000 router
+		Find the IP of your docker machine. Go to your browser, type in (docker machine IP):40000. You should be able to see "Hello world!" in your browser.
