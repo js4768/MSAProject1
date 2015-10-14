@@ -7,4 +7,4 @@ cd ../student-svc
 docker build -t student-svc .
 docker run -d -p 41000:3000 router
 docker run -d -p 42000:3000 course-svc
-docker run -d -p 43000:3000 course-svc
+docker run -d -p 43000:3000 student-svc

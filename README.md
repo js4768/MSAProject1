@@ -3,7 +3,7 @@
 This project is meant to work in docker daemon. Make sure you compile and run the program under docker environment!
 
 Usage:
-	Type ./build-system.sh to build all docker services.
+	Type ./build-system.sh to build all docker services and run them in separate containers. Visit (docker-machine ip):41000 for router, 42000 for course service, and 43000 for student service.
 
 Docker notes:
 	Start a container: docker run -d -p port:port image
