@@ -12,6 +12,9 @@ ADD . /opt/app
 ENV NODE_ENV production
 ENV EXPRESS_PORT 80
 
+EXPOSE 3000
 EXPOSE 8080
 EXPOSE 5672
 EXPOSE 15672
+
+CMD ["node", "/student-svc/service.js"]
