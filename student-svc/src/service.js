@@ -2,9 +2,24 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017');
+var id_generator = require('./id_generator');
+var xml2js = require('xml2js');
+var util = require('util');
+var fs = require('fs');
+var fileName = 'config.xml';
+var parser = new xml2js.Parser();
+var mongodb_ip = '';
+fs.readFile(__dirname + '/config.xml', function(err, data) {
+    parser.parseString(data, function (err, result) {
+      mongodb_ip += result.config.mongodb;
+      mongoose.connect(mongodb_ip);
+      console.log("Connected to mongodb: "+mongodb_ip);
+    });
+});
 
-var Student = mongoose.model('Student', {firstname: String, lastname: String});
+var Student = mongoose.model('Student', {firstname: String, 
+                                         lastname: String, 
+                                         id: String});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
@@ -13,27 +28,82 @@ app.get('/student', function (req, res) {
 });
 
 app.post('/student/add', function (req, res) {
+  if(req.body == null) {
+    res.status(500).send('Request body is empty!');
+  }
+  if(req.body.firstname == null || req.body.lastname == null) {
+    res.status(500).send('Bad request data!');
+  }
   var firstname = req.body.firstname,
-      lastname = req.body.lastname;
-  res.send("A new student is added to database. Firstname: "+firstname+" Lastname: "+lastname);
+      lastname = req.body.lastname,
+      id = id_generator.generate_id(firstname, lastname);
+  var newStudent = new Student({firstname:firstname, lastname:lastname, id:id});
+  newStudent.save(function (err) {
+    if(err) {
+      console.log("Saving to db failed. Student: "+firstname+" "+lastname);
+      res.send("Failed to save student to database.");
+    }
+  });
+  res.send("A new student is added to database. Firstname: "+firstname+" Lastname: "+lastname+" ID: "+id);
 });
 
 app.get('/student/info', function (req, res) {
-  var title = req.query['title'];
-  res.send("Something about student "+title);
+  if(req.body == null) {
+    res.status(500).send('Request body is empty!');
+  }
+  if(req.body.id == null) {
+    res.status(500).send('Bad request data!');
+  }
+  var firstname = req.body.firstname,
+      lastname = req.body.lastname,
+      id = req.body.id;
+  
+  Student.find({id:id}, function (err, result) {
+    if(err) {
+      console.error("/student/info failed with student id "+id);
+      res.status(400).send("Internal errors");
+    }
+    res.send("Something about student "+id+" "+result);
+  });
 });
 
 app.delete('/student/delete', function (req, res) {
-  res.send("Delete a student "+req.body.title);
+  if(req.body == null) {
+    res.status(500).send('Request body is empty!');
+  }
+  if(req.body.id == null) {
+    res.status(500).send('Bad request data!');
+  }
+  var id = req.body.id;
+  Student.remove({id:id}, function (err) {
+    if (err) {
+      console.error("/student/delete failed with student id "+id);
+      res.status(400).send("Internal errors");
+    }
+  });
+  res.send("Delete a student "+req.body.id);
 });
 
 app.post('/student/update', function (req, res) {
-  var title = req.body.title,
-      room = req.body.room,
-      prof = req.body.prof,
-      time = req.body.time;
-  if(prof == null) console.log("no prof");
-  res.send('Title: '+title+' Room: '+room+' Prof: '+prof+' Time: '+time);
+  if(req.body == null) {
+    res.status(500).send('Request body is empty!');
+  }
+  if(req.body.id == null) {
+    res.status(500).send('Bad request data!');
+  }
+  var id = req.body.id;
+  res.send("Info about student "+id);
+});
+
+app.get('/student/getall', function (req, res) {
+  Student.find({}).exec(function(err, result) {
+    if (!err) {
+      res.send(result);
+    } else {
+      console.error("/student/getall failed");
+      res.status(500).send("Internal errors");
+    };
+  });
 });
 
 var server = app.listen(3000, function () {

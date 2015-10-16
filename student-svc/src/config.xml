@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <mongodb>mongodb://localhost:27017</mongodb>
+  <schema>
+    <field>firstname</field>
+    <field>lastname</field>
+    <field>id</field>
+  </schema>
+</config>
