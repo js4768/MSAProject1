@@ -13,6 +13,7 @@
     "express": "^4.13.3",
     "libxmljs": "^0.14.3",
     "mongoose": "^4.1.11",
+    "mongoose-gen": "^2.1.0",
     "util": "^0.10.3",
     "xml2js": "^0.4.13"
   }
