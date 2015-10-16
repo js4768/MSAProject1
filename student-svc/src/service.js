@@ -48,15 +48,19 @@ app.post('/student/add', function (req, res) {
 });
 
 app.get('/student/info', function (req, res) {
-  if(req.body == null) {
+  if(req.query == null) {
     res.status(500).send('Request body is empty!');
   }
-  if(req.body.id == null) {
+  if(req.query['id'] == null) {
     res.status(500).send('Bad request data!');
   }
-  var firstname = req.body.firstname,
-      lastname = req.body.lastname,
-      id = req.body.id;
+  // List all attribute to find non-existing ones
+  for(var name in req.query) {
+    console.log(name+"="+req.query[name]);
+  }
+  var firstname = req.query["firstname"],
+      lastname = req.query["lastname"],
+      id = req.query["id"];
   
   Student.find({id:id}, function (err, result) {
     if(err) {
