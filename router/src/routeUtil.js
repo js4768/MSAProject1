@@ -1,7 +1,7 @@
 
 var mongoose = require('mongoose');
 
-var checkNullOrExists = function(req) {
+module.exports.createRoute = function(req, res) {
 	if(req.body != null &&
 		req.body.httpMethod != null && req.body.httpMethod != '' &&
 		req.body.service != null && req.body.service != '' &&
@@ -18,6 +18,8 @@ var checkNullOrExists = function(req) {
 		if(keyLowerValue < keyUpperValue && 
 			keyLowerValue >= 'a' && keyUpperValue <= 'z') {
 
+			console.log('checking for duplicate routes');
+
 			var RoutingTable = mongoose.model('RoutingTable');
 			RoutingTable.find({
 				httpMethod: req.body.httpMethod,
@@ -29,23 +31,26 @@ var checkNullOrExists = function(req) {
 				ip: req.body.ip,
 				port: req.body.port
 			}, function(error, routes) {
-				if(routes.length == 0) return false;
+				if(routes.length == 0) {
+					creatingRoute(req, res);
+					console.log('Route Created');
+				} else {
+					console.log('Invalid add route request');
+					res.status(404).send('Invalid request, Check the request format and values.');
+				}
 			});
+		} else {
+			console.log('Invalid add route request');
+			res.status(404).send('Invalid request, Check the request format and values.');
 		}
-	}
-	return true;
-};
-
-module.exports.createRoute = function(req, res) {
-	if(checkNullOrExists(req)) {
+	} else {
 		console.log('Invalid add route request');
 		res.status(404).send('Invalid request, Check the request format and values.');
-		return;
 	}
+};
 
+var creatingRoute = function(req, res) {
 	var RoutingTable = mongoose.model('RoutingTable');
-	//TODO Check for not nulls
-	//TODO Check whether record already exists
 	RoutingTable.create({
 		httpMethod: req.body.httpMethod,
 		service: req.body.service,
