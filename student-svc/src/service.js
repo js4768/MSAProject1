@@ -43,6 +43,18 @@ app.post('/student/add', function (req, res) {
   var firstname = req.body.firstname,
       lastname = req.body.lastname,
       id = id_generator.generate_id(firstname, lastname);
+  
+  var duplicate = function (id, Student) {
+    Student.find({id:id}, function (err, result) {
+      if(result.length>0) return false;
+      else return true;
+    });
+  };
+  
+  while(duplicate(id, Student)) {
+    id = id_generator.generate_id(firstname, lastname);
+  }
+
   var newStudent = new Student({firstname:firstname, lastname:lastname, id:id});
   newStudent.save(function (err) {
     if(err) {
@@ -59,26 +71,12 @@ app.get('/student/info', function (req, res) {
     res.status(400).send('Request body is empty!');
     return;
   }
-  // List all attribute to find non-existing ones
-  for(var name in req.query) {
-    var valid = false;
-    for(var attribute in schemaList) {
-      if(name == schemaList[attribute]) {
-        valid = true;
-        break;
-      }
-    }
-    if(!valid) {
-      console.error("/student/info received incorrect field");
-      res.status(400).send("Bad request format");
-      return;
-    }
+  if(req.body.id == null) {
+    res.status(400).send('Must provide student ID');
+    return;
   }
-  var qry = {};
-  for(var param in req.query) {
-    qry[param] = req.query[param];
-  }
-  Student.find(qry, function (err, result) {
+  
+  Student.find({id:req.query['id']}, function (err, result) {
     if(err) {
       console.error("/student/info failed with student id "+id);
       res.status(500).send("Internal errors");
@@ -153,6 +151,30 @@ app.post('/student/update', function (req, res) {
   Student.find(qry, function (err, result) {
     res.send("Student update: "+result);
   });
+});
+
+//app.get('/student/addSchema', function (req, res) {
+//  if(req.query==null) {
+//    res.status(400).send('Must have a parameter');
+//    return;
+//  }
+//  if(req.query['schema']==null) {
+//    res.status(400).send('Must have a schema field');
+//    return;
+//  }
+//  var tempSchemaList = [];
+//  var sch = req.query['schema'];
+//  console.log(sch);
+//  for(var s in schemaList) {
+//    if(sch == s) {
+//      res.status(400).send('Schema already exists.');
+//      return;
+//    }
+//  }
+
+  schemaList = schemaList.push(sch);
+  fs.writeFile('schema.json', JSON.stringify(schemaList));
+  res.send("Schema added");
 });
 
 app.get('/student/getall', function (req, res) {

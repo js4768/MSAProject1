@@ -9,9 +9,7 @@ API:
 	Must be followed by a JSON request body. In the body a valid firstname and lastname field must be specified.
 
 /student/info GET
-	This API returns all student who satisfy certain conditions.
-
-	Use URL parameters to construct the query. If no parameter is present, the API returns all students in the database.
+	This API return student info with the student ID.
 
 /student/delete DELETE
 	This API deletes one student with the given student ID.
