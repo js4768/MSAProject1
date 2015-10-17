@@ -84,7 +84,7 @@ app.post('/course/addStudentToCourse', function (req, res) {
   }
   var courseID = req.body.courseID,
       studentID = req.body.studentID,
-      id = id_generator.generate_id(courseID, studentID);
+      id = id_generator.generate_id("CS");
   var newCourseStudent = new CourseStudent({courseID:courseID, studentID:studentID, id:id});
   newCourseStudent.save(function (err) {
     if(err) {
@@ -95,8 +95,6 @@ app.post('/course/addStudentToCourse', function (req, res) {
   });
   res.send("A new student is added to course in database. Course ID: "+courseID+" Student ID: "+studentID);
 });
-
-
 
 
 app.get('/course/info', function (req, res) {
@@ -133,6 +131,50 @@ app.get('/course/info', function (req, res) {
   });
 });
 
+
+app.get('/course/getStudentsInCourse', function (req, res) {
+  if(req.query == null) {
+    res.status(400).send('Request body is empty!');
+    return;
+  }
+  if(req.body == null) {
+    res.status(400).send('Request body is empty!');
+    return;
+  }
+  if(req.query['courseID'] == null ) {
+    res.status(400).send('Course ID is empty');
+    return;
+  }
+  // List all attribute to find non-existing ones
+  for(var name in req.query) {
+    var valid = false;
+    for(var attribute in courseStudentSchemaList) {
+      if(name == courseStudentSchemaList[attribute]) {
+        valid = true;
+        break;
+      }
+    }
+    if(!valid) {
+      console.error("/course/getStudentsInCourse received incorrect field");
+      res.status(400).send("Bad request format");
+      return;
+    }
+  }
+  var qry = {};
+  for(var param in req.query) {
+    qry[param] = req.query[param];
+  }
+  CourseStudent.find(qry, function (err, result) {
+    if(err) {
+      console.error("/course/getStudentsInCourse failed with course id "+id);
+      res.status(500).send("Internal errors");
+      return;
+    }
+    res.send(result);
+  });
+});
+
+
 app.delete('/course/delete', function (req, res) {
   if(req.body == null) {
     res.status(400).send('Request body is empty!');
@@ -143,10 +185,7 @@ app.delete('/course/delete', function (req, res) {
     return;
   }
   var id = req.body.id;
-  if(id.length != 6) {
-    res.status(400).send('Invalid course ID');
-    return;
-  }
+   
   Course.remove({id:id}, function (err) {
     if (err) {
       console.error("/course/delete failed with course id "+id);
@@ -170,11 +209,7 @@ app.delete('/course/deleteStudentFromCourse', function (req, res) {
   }
 
   var courseID = req.body.courseID;
-  var studentID = req.body.studentID;
-  if(courseID.length != 6 || studentID.length != 6 ) {
-    res.status(400).send("Invalid course ID or student ID");
-    return;
-  }
+  var studentID = req.body.studentID; 
 
   CourseStudent.remove({courseID:courseID , studentID:studentID}, function (err) {
     if (err) {
