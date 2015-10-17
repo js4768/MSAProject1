@@ -171,11 +171,10 @@ app.post('/student/update', function (req, res) {
 //      return;
 //    }
 //  }
-
-  schemaList = schemaList.push(sch);
-  fs.writeFile('schema.json', JSON.stringify(schemaList));
-  res.send("Schema added");
-});
+//  schemaList = schemaList.push(sch);
+//  fs.writeFile('schema.json', JSON.stringify(schemaList));
+//  res.send("Schema added");
+//});
 
 app.get('/student/getall', function (req, res) {
   Student.find({}).exec(function(err, result) {
