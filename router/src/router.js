@@ -1,7 +1,9 @@
 var express = require('express');
+var request = require('request');
 var db = require('./model/db');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
+var _ = require('underscore');
 
 var app = express();
 app.use(bodyParser.json());
@@ -32,7 +34,7 @@ router.post('/router/add', function(req, res) {
 	});
 });
 
-router.post('/router/update', function(req, res) {
+router.post('/router/delete', function(req, res) {
 	res.send('accessing /config/updateroute');
 });
 
@@ -62,14 +64,57 @@ router.post('/:service/:api', function(req, res) {
 		if(error || routes.length < 1) {
 			console.log('No route Found');
 			res.status(404).send('Route Not Found');
-		} else {
-			console.log('routes found = ' + JSON.stringify(routes));
-			res.send('routes found = ' + JSON.stringify(routes));
-
-			if(routes.length == 1) {
-				req.redirect(routes[0].ip)
-			}
+			return;
 		}
+
+		console.log('routes found = ' + JSON.stringify(routes));
+		if(routes.length == 1) {
+			console.log('redirecting to = ' + routes[0].ip + ":" + routes[0].port + req.path);
+			/*
+			request(
+				{
+					url:routes[0].ip + ":" + routes[0].port + req.path,
+					headers: req.headers,
+					body: req.body
+				}, 
+				function(error, remoteResponse, remoteBody) {
+					if (error) { 
+						res.status(500).end('Error'); 
+					} else {
+						//TODO
+    					//res.writeHead(...);
+    					//res.end(remoteBody);
+    				}
+				} 
+			);
+			*/
+			res.redirect(307, routes[0].ip + ":" + routes[0].port + req.path);
+			return;
+		}
+
+		// keyName will be the same for all partitions
+		var keyName = routes[0].keyName;
+		console.log('keyName found = ' + keyName);
+
+		if(req.body[keyName] != null && 
+			req.body[keyName] != '') {
+			var keyValue = (req.body[keyName]).charAt(0);
+			console.log('keyValue = ' + keyValue);
+
+			var route = _.find(routes, function(route) {
+				if (route.keyLowerValue <= keyValue
+					&& route.keyUpperValue >= keyValue) {
+					return route;
+				};
+			})
+
+			console.log('route found = ' + JSON.stringify(route));
+			res.redirect(307, route.ip + ":" + route.port + req.path);
+			return;
+		}
+
+		console.log('Key Not Found');
+		res.status(404).send('Key Not Found');
 	});
 });
 
