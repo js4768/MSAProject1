@@ -8,40 +8,69 @@ app.use(bodyParser.json());
 
 var router = express.Router();
 
-router.post('/api/:name', function(req, res) {
-	console.log('accessing /api/:name');
-	var APIToServiceTable = mongoose.model('APIToServiceTable');
-	var query = APIToServiceTable.findOne({'api': req.params.name});
-	query.exec(function(error, record) {
-		if(error) {
-			console.log('api found');
-			res.send('api not found');
-		} else {
-			console.log('api found');
-			res.send('api not found');
-			//res.redirect();
-		}
-	})
-});
-
-router.post('/config/addroute', function(req, res) {
-	var APIToServiceTable = mongoose.model('APIToServiceTable');
-	APIToServiceTable.create({
+router.post('/router/add', function(req, res) {
+	var RoutingTable = mongoose.model('RoutingTable');
+	//TODO Check for not nulls
+	//TODO Check whether record already exists
+	RoutingTable.create({
+		httpMethod: req.body.httpMethod,
+		service: req.body.service,
 		api: req.body.api,
-		service: req.body.service
+		keyName: req.body.keyName,
+		keyLowerValue: req.body.keyLowerValue,
+		keyUpperValue: req.body.keyUpperValue,
+		ip: req.body.ip,
+		port: req.body.port
 	}, function(error, record) {
 		if(!error) {
-			console.log('record saved');
-			res.status(200).send('record saved');
+			console.log('new route added');
+			res.status(200).send('Route added');
 		} else {
-			console.log('error while creating record');
-			res.status(404).send('error while creating record');
+			console.log('error while adding route');
+			res.status(404).send('error while adding route');
 		}
 	});
 });
 
-router.post('/config/updateroute', function(req, res) {
+router.post('/router/update', function(req, res) {
 	res.send('accessing /config/updateroute');
+});
+
+router.get('/router/get', function(req, res) {
+	var RoutingTable = mongoose.model('RoutingTable');
+	RoutingTable.find({}, function(error, routes) {
+		if(!error) {
+			console.log('Returning all routes');
+			console.log(JSON.stringify(routes));
+			res.writeHead(200, {"Content-Type": "application/json"});
+  			res.end(JSON.stringify(routes));
+		} else {
+			console.log('error while fetching routes');
+			res.status(404).send('Error while fetching routes');
+		}
+	});
+});
+
+router.post('/:service/:api', function(req, res) {
+	var RoutingTable = mongoose.model('RoutingTable');
+	
+	RoutingTable.find({
+		'httpMethod': 'post',
+		'service': req.params.service,
+		'api': req.params.api
+	}, function(error, routes){
+		if(error || routes.length < 1) {
+			console.log('No route Found');
+			res.status(404).send('Route Not Found');
+		} else {
+			console.log('routes found = ' + JSON.stringify(routes));
+			res.send('routes found = ' + JSON.stringify(routes));
+
+			if(routes.length == 1) {
+				req.redirect(routes[0].ip)
+			}
+		}
+	});
 });
 
 router.get('/*', function(req, res) {

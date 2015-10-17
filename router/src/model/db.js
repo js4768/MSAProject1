@@ -22,9 +22,15 @@ process.on('SIGINT', function() {
 	});
 });
 
-var APIToServiceSchema = new mongoose.Schema({
-	api: {type: String, unique: true},
-	service: String
+var RoutingTableSchema = new mongoose.Schema({
+	httpMethod: String,
+	service: String,
+	api: String,
+	keyName: String,
+	keyLowerValue: String,
+	keyUpperValue: String,
+	ip: String,
+	port: String
 });
 
-mongoose.model('APIToServiceTable', APIToServiceSchema);
+mongoose.model('RoutingTable', RoutingTableSchema);
