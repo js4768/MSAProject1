@@ -14,8 +14,9 @@ module.exports.redirect = function(RoutingTable, req, res, httpMethod) {
 
 		console.log('routes found = ' + JSON.stringify(routes));
 		if(routes.length == 1) {
-			console.log('redirecting to = ' + routes[0].ip + ":" + routes[0].port + req.path);
-			res.redirect(307, routes[0].ip + ":" + routes[0].port + req.path);
+			var url = 'http:\/\/' + routes[0].ip + ":" + routes[0].port + req.path;
+			console.log('redirecting to = ' + url);
+			res.redirect(url);
 			return;
 		}
 
@@ -36,7 +37,9 @@ module.exports.redirect = function(RoutingTable, req, res, httpMethod) {
 			})
 
 			console.log('route found = ' + JSON.stringify(route));
-			res.redirect(307, route.ip + ":" + route.port + req.path);
+			var url = 'http:\/\/' + routes[0].ip + ":" + routes[0].port + req.path;
+			console.log('redirecting to = ' + url);
+			res.redirect(url);
 			return;
 		}
 
