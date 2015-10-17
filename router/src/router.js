@@ -1,5 +1,4 @@
 var express = require('express');
-var request = require('request');
 var db = require('./model/db');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
@@ -31,6 +30,11 @@ router.post('/:service/:api', function(req, res) {
 router.get('/:service/:api', function(req, res) {
 	var RoutingTable = mongoose.model('RoutingTable');
 	redirectUtil.redirect(RoutingTable, req, res, 'get');
+});
+
+router.delete('/:service/:api', function(req, res) {
+	var RoutingTable = mongoose.model('RoutingTable');
+	redirectUtil.redirect(RoutingTable, req, res, 'delete');
 });
 
 router.get('/*', function(req, res) {
