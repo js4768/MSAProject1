@@ -1,3 +1,12 @@
+var jackrabbit = require('jackrabbit');
+
+var rabbit = jackrabbit("amqp://dev.rabbitmq.com");
+var exchange = rabbit.default();
+var hello = exchange.queue({ name: 'deleteStudent' });
+
+
+
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
@@ -25,10 +34,15 @@ for(var name in studentJSON) {
 }
 var Student = mongoose.model('Student', studentSchema);
 
+
+
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.get('/student', function (req, res) {
   res.send('This is student service');
+
+
 });
 
 app.post('/student/add', function (req, res) {
@@ -83,6 +97,8 @@ app.get('/student/info', function (req, res) {
       return;
     }
     res.send(result);
+
+
   });
 });
 
@@ -107,6 +123,13 @@ app.delete('/student/delete', function (req, res) {
       return;
     }
   });
+
+
+
+
+exchange.publish(id, { key: 'deleteStudent' });//send student ID that was deleted
+//exchange.on('drain', process.exit); //write this to end the service
+
   res.send("Delete student "+id);
 });
 
