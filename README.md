@@ -1,5 +1,14 @@
 # MSAProject1
 
+==================2015.10.17======================
+This project is designed to demonstrate how micro service concepts works with a real-world implementation.
+
+Our project is built based on Node.js and MongoDB. Several open source Node.js libraries are used.
+
+Build the system:
+	Please run build-system.sh to configure the node environment.
+
+==================Previous version=======================
 This project is meant to work in docker daemon. Make sure you compile and run the program under docker environment!
 
 Usage:
