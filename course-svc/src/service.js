@@ -1,3 +1,6 @@
+
+
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
@@ -27,6 +30,37 @@ for(var name in courseJSON) {
 }
 var Course = mongoose.model('Course', courseSchema);
 
+var jackrabbit = require('jackrabbit');
+
+var rabbit = jackrabbit("amqp://dev.rabbitmq.com");
+var exchange = rabbit.default();
+var deleteStudent = exchange.queue({ name: 'deleteStudent' });
+
+deleteStudent.consume(onMessage, { noAck: true });
+
+function onMessage(data) {
+  console.log('received student ID:', data);
+
+  if(data != null) {
+
+
+    var studentID = data; 
+
+    CourseStudent.remove({studentID:studentID}, function (err) {
+      if (err) {
+        console.error("/course/deleteStudentFromCourse failed with student ID" + studentID );
+      }
+      else
+      {
+        console.log("deleted studentID "+studentID + " from a course");
+      }
+    });
+
+
+    }
+}
+
+
 
 
 //course-student
@@ -44,6 +78,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.get('/course', function (req, res) {
   res.send('This is a course service');
+
 });
 
 app.post('/course/add', function (req, res) {
@@ -97,7 +132,33 @@ app.post('/course/addStudentToCourse', function (req, res) {
 });
 
 
+
+
 app.get('/course/info', function (req, res) {
+  if(req.query == null) {
+    res.status(400).send('Request body is empty!');
+    return;
+  }
+  if(req.body.id == null) {
+    res.status(400).send('Must provide course ID');
+    return;
+  }
+  
+  Course.find({id:req.query['id']}, function (err, result) {
+    if(err) {
+      console.error("/course/info failed with course id "+id);
+      res.status(500).send("Internal errors");
+      return;
+    }
+    res.send(result);
+
+  });
+});
+
+
+
+
+app.get('/course/getAllInfo', function (req, res) {
   if(req.query == null) {
     res.status(400).send('Request body is empty!');
     return;
@@ -275,7 +336,7 @@ app.get('/course/getall', function (req, res) {
   });
 });
 
-var server = app.listen(3000, function () {
+var server = app.listen(4000, function () {
   var host = server.address().address;
   var port = server.address().port;
 

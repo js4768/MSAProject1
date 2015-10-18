@@ -4,7 +4,7 @@ module.exports = {
     while(random < 1000) {
       random = Math.round(Math.random()*10000);
     }
-    var id = variablename.charAt(0).toLowerCase()+random;
+    var id = variablename.charAt(0).toLowerCase()+variablename.charAt(1).toLowerCase()+random;
     return id;
   }
 };
