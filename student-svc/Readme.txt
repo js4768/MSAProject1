@@ -1,6 +1,6 @@
-To compile service.js, run "npm install" first.
-
-config.xml contains mongodb ip:port. Schema.son contains the schema used in the db.
+Student service is encapsulated in a docker container. To spin-up a student service instance, type:
+	docker-compose -p INSTANCE_NAME up -d
+Before spinning up another student instance, you have to change the ports mapping in the YML file.
 
 API:
 /student/add POST

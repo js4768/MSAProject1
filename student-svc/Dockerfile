@@ -4,15 +4,12 @@ RUN echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiver
 RUN apt-get update && apt-get install -y \
 	build-essential \
 	nodejs \
-	npm \
-	mongodb-org
-	
-COPY ./src /student-svc
-ADD src/package.json /student-svc/package.json
+	npm	
+COPY ./src/* /student-svc/
 
-RUN cd student-svc && npm install
-
+RUN cd student-svc && npm update && npm install
 RUN mkdir -p /opt/app && cp -a /student-svc/node_modules /opt/app/
+RUN cp -a /student-svc/schema.json /opt/app
 
 WORKDIR /opt/app
 ADD . /opt/app
@@ -24,5 +21,6 @@ EXPOSE 3000
 EXPOSE 8080
 EXPOSE 5672
 EXPOSE 15672
+EXPOSE 27017
 
 CMD ["nodejs", "/student-svc/service.js"]

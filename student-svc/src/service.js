@@ -18,14 +18,26 @@ var util = require('util');
 var fs = require('fs');
 var fileName = 'config.xml';
 var parser = new xml2js.Parser();
-var mongodb_ip = '';
-fs.readFile(__dirname + '/config.xml', function(err, data) {
-    parser.parseString(data, function (err, result) {
-      mongodb_ip += result.config.mongodb;
-      mongoose.connect(mongodb_ip);
-      console.log("Connected to mongodb: "+mongodb_ip);
-    });
-});
+var mongodb_ip = 'mongodb://'+process.env.MONGO_PORT_27017_TCP_ADDR+':'
+  +process.env.MONGO_PORT_27017_TCP_PORT;
+//fs.readFile(__dirname + '/config.xml', function(err, data) {
+//  parser.parseString(data, function (err, result) {
+//    mongodb_ip += result.config.mongodb;
+//    mongoose.connect(mongodb_ip);
+//    console.log("Connected to mongodb: "+mongodb_ip);
+//  });
+//});
+
+var connectWithRetry = function() {
+  return mongoose.connect(mongodb_ip, function(err) {
+    if (err) {
+        console.error('Failed to connect to mongo on startup - retrying in 1 sec', err);
+        setTimeout(connectWithRetry, 1000);
+      }
+  });
+};
+connectWithRetry();
+console.log("Connect to Mongodb at "+mongodb_ip);
 var studentJSON = JSON.parse(fs.readFileSync('schema.json', 'utf8'));
 var studentSchema = new mongoose.Schema(mongoose_gen.convert(studentJSON));
 var schemaList = [];  // a list to store all the schema in memory
@@ -85,7 +97,7 @@ app.get('/student/info', function (req, res) {
     res.status(400).send('Request body is empty!');
     return;
   }
-  if(req.body.id == null) {
+  if(req.query['id'] == null) {
     res.status(400).send('Must provide student ID');
     return;
   }
@@ -97,8 +109,6 @@ app.get('/student/info', function (req, res) {
       return;
     }
     res.send(result);
-
-
   });
 });
 
