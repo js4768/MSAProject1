@@ -1,6 +1,7 @@
 Student service is encapsulated in a docker container. To spin-up a student service instance, type:
 	docker-compose -p INSTANCE_NAME up -d
-Before spinning up another student instance, you have to change the ports mapping in the YML file.
+Before spinning up another student instance, you have to change the ports mapping in the YML file. To build the student image, type:
+	docker build -t student-svc .
 
 API:
 /student/add POST
