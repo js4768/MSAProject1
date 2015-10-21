@@ -12,14 +12,19 @@ var util = require('util');
 var fs = require('fs');
 var fileName = 'config.xml';
 var parser = new xml2js.Parser();
-var mongodb_ip = '';
-fs.readFile(__dirname + '/config.xml', function(err, data) {
-    parser.parseString(data, function (err, result) {
-      mongodb_ip += result.config.mongodb;
-      mongoose.connect(mongodb_ip);
-      console.log("Connected to mongodb: "+mongodb_ip);
-    });
-});
+var mongodb_ip = 'mongodb://'+process.env.MONGO_PORT_27017_TCP_ADDR+':'
+  +process.env.MONGO_PORT_27017_TCP_PORT;
+
+var connectWithRetry = function() {
+  return mongoose.connect(mongodb_ip, function(err) {
+    if (err) {
+        console.error('Failed to connect to mongo on startup - retrying in 1 sec', err);
+        setTimeout(connectWithRetry, 1000);
+      }
+  });
+};
+connectWithRetry();
+console.log("Connect to Mongodb at "+mongodb_ip);
 
 //course
 var courseJSON = JSON.parse(fs.readFileSync('course_schema.json', 'utf8'));
@@ -325,6 +330,30 @@ app.post('/course/update', function (req, res) {
   });
 });
 
+app.get('/course/addSchema', function (req, res) {
+  if(req.query==null) {
+    res.status(400).send('Must have a parameter');
+    return;
+  }
+  if(req.query['schema']==null) {
+    res.status(400).send('Must have a schema field');
+    return;
+  }
+  var tempSchemaList = [];
+  var sch = req.query['schema'];
+  console.log(sch);
+  for(var s in schemaList) {
+    if(sch == s) {
+      res.status(400).send('Schema already exists.');
+      return;
+    }
+  }
+  schemaList = schemaList.push(sch);
+  // We are in docker. Writing to file doesn't pan out.
+  //fs.writeFile('schema.json', JSON.stringify(schemaList));
+  res.send("Schema added");
+});
+
 app.get('/course/getall', function (req, res) {
   Course.find({}).exec(function(err, result) {
     if (!err) {
@@ -336,7 +365,7 @@ app.get('/course/getall', function (req, res) {
   });
 });
 
-var server = app.listen(4000, function () {
+var server = app.listen(3000, function () {
   var host = server.address().address;
   var port = server.address().port;
 

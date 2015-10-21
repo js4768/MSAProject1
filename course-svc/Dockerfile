@@ -1,10 +1,16 @@
-FROM node:latest
-COPY ./src /course-svc
-ADD src/package.json /course-svc/package.json
+FROM ubuntu:14.04
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+RUN echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+RUN apt-get update && apt-get install -y \
+	build-essential \
+	nodejs \
+	npm	
+COPY ./src/* /course-svc/
 
-RUN cd course-svc && npm install
-
+RUN cd course-svc && npm update && npm install
 RUN mkdir -p /opt/app && cp -a /course-svc/node_modules /opt/app/
+RUN cp -a /course-svc/course_schema.json /opt/app
+RUN cp -a /course-svc/course_student_schema.json /opt/app
 
 WORKDIR /opt/app
 ADD . /opt/app
@@ -16,5 +22,6 @@ EXPOSE 3000
 EXPOSE 8080
 EXPOSE 5672
 EXPOSE 15672
+EXPOSE 27017
 
-CMD ["node","/course-svc/service.js"]
+CMD ["nodejs", "/course-svc/service.js"]

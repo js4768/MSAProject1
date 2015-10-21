@@ -1,7 +1,7 @@
 #!/bin/bash
 cd router/src
 npm install
-cd ../../course-svc/src
-npm install
+cd ../../course-svc
+docker build -t course-svc .
 cd ../../student-svc/src
-npm install 
+docker build -t student-svc .

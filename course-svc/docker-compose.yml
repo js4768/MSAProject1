@@ -1,0 +1,10 @@
+coursesvc:
+  image: course-svc
+  ports:
+  - 42000:3000
+  links:
+  - mongo
+mongo:
+  image: mongo
+  expose:
+  - "27017"

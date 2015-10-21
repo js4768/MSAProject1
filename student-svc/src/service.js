@@ -186,28 +186,29 @@ app.post('/student/update', function (req, res) {
   });
 });
 
-//app.get('/student/addSchema', function (req, res) {
-//  if(req.query==null) {
-//    res.status(400).send('Must have a parameter');
-//    return;
-//  }
-//  if(req.query['schema']==null) {
-//    res.status(400).send('Must have a schema field');
-//    return;
-//  }
-//  var tempSchemaList = [];
-//  var sch = req.query['schema'];
-//  console.log(sch);
-//  for(var s in schemaList) {
-//    if(sch == s) {
-//      res.status(400).send('Schema already exists.');
-//      return;
-//    }
-//  }
-//  schemaList = schemaList.push(sch);
-//  fs.writeFile('schema.json', JSON.stringify(schemaList));
-//  res.send("Schema added");
-//});
+app.get('/student/addSchema', function (req, res) {
+  if(req.query==null) {
+    res.status(400).send('Must have a parameter');
+    return;
+  }
+  if(req.query['schema']==null) {
+    res.status(400).send('Must have a schema field');
+    return;
+  }
+  var tempSchemaList = [];
+  var sch = req.query['schema'];
+  console.log(sch);
+  for(var s in schemaList) {
+    if(sch == s) {
+      res.status(400).send('Schema already exists.');
+      return;
+    }
+  }
+  schemaList = schemaList.push(sch);
+  // We are in docker. Writing to file doesn't pan out.
+  //fs.writeFile('schema.json', JSON.stringify(schemaList));
+  res.send("Schema added");
+});
 
 app.get('/student/getall', function (req, res) {
   Student.find({}).exec(function(err, result) {
