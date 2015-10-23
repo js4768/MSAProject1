@@ -144,7 +144,7 @@ app.get('/course/info', function (req, res) {
     res.status(400).send('Request body is empty!');
     return;
   }
-  if(req.body.id == null) {
+  if(req.query["id"] == null) {
     res.status(400).send('Must provide course ID');
     return;
   }
@@ -200,10 +200,6 @@ app.get('/course/getAllInfo', function (req, res) {
 
 app.get('/course/getStudentsInCourse', function (req, res) {
   if(req.query == null) {
-    res.status(400).send('Request body is empty!');
-    return;
-  }
-  if(req.body == null) {
     res.status(400).send('Request body is empty!');
     return;
   }

@@ -1,7 +1,7 @@
 coursesvc:
   image: course-svc
   ports:
-  - 42000:3000
+  - 41000:3000
   links:
   - mongo
 mongo:
