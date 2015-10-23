@@ -1,5 +1,10 @@
 # MSAProject1
 
+==================2015.10.22======================
+Please run ./build-system.sh to build the docker images for each service.
+
+To start up a service, switch to the coresponding dir, and type docker-compose -p SERVICE_NAME up -d. If you want to have multiple instances of one service, go to docker-compose.yml file and change the first number under PORTS, then run docker compose command again.
+
 ==================2015.10.17======================
 This project is designed to demonstrate how micro service concepts works with a real-world implementation.
 
