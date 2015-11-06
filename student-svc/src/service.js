@@ -18,15 +18,18 @@ var util = require('util');
 var fs = require('fs');
 var fileName = 'config.xml';
 var parser = new xml2js.Parser();
+// For localhost testing
+// var mongodb_ip = 'mongodb://0.0.0.0:27017';
+// Docker Environment
 var mongodb_ip = 'mongodb://'+process.env.MONGO_PORT_27017_TCP_ADDR+':'
   +process.env.MONGO_PORT_27017_TCP_PORT;
-//fs.readFile(__dirname + '/config.xml', function(err, data) {
-//  parser.parseString(data, function (err, result) {
-//    mongodb_ip += result.config.mongodb;
-//    mongoose.connect(mongodb_ip);
-//    console.log("Connected to mongodb: "+mongodb_ip);
-//  });
-//});
+fs.readFile(__dirname + '/config.xml', function(err, data) {
+  parser.parseString(data, function (err, result) {
+    mongodb_ip += result.config.mongodb;
+    mongoose.connect(mongodb_ip);
+    console.log("Connected to mongodb: "+mongodb_ip);
+  });
+});
 
 var connectWithRetry = function() {
   return mongoose.connect(mongodb_ip, function(err) {
@@ -39,7 +42,7 @@ var connectWithRetry = function() {
 connectWithRetry();
 console.log("Connect to Mongodb at "+mongodb_ip);
 var studentJSON = JSON.parse(fs.readFileSync('schema.json', 'utf8'));
-var studentSchema = new mongoose.Schema(mongoose_gen.convert(studentJSON));
+var studentSchema = new mongoose.Schema(mongoose_gen.convert(studentJSON), {strict:false});
 var schemaList = [];  // a list to store all the schema in memory
 for(var name in studentJSON) {
   schemaList.push(name);
@@ -102,7 +105,11 @@ app.get('/student/info', function (req, res) {
     return;
   }
   
-  Student.find({id:req.query['id']}, function (err, result) {
+  var fields = '';
+  for	(index = 0; index < schemaList.length; index++) {
+    fields += schemaList[index]+' ';
+  }
+  Student.find({id:req.query['id']}, fields, function (err, result) {
     if(err) {
       console.error("/student/info failed with student id "+id);
       res.status(500).send("Internal errors");
@@ -170,8 +177,9 @@ app.post('/student/update', function (req, res) {
   var update = {};
   var qry = {id: req.body.id};
   for(var param in req.body) {
-    if(param!="id")
+    if(param!="id") {
       update[param] = req.body[param];
+    }
   }
   var options = { multi: true };
   Student.update(qry, update, options, function (err, numAffected) {
@@ -186,25 +194,29 @@ app.post('/student/update', function (req, res) {
   });
 });
 
-app.get('/student/addSchema', function (req, res) {
-  if(req.query==null) {
+app.post('/student/addSchema', function (req, res) {
+  if(req.body==null) {
     res.status(400).send('Must have a parameter');
     return;
   }
-  if(req.query['schema']==null) {
+  if(req.body.schema == null) {
     res.status(400).send('Must have a schema field');
     return;
   }
+  if(req.body.type == null) {
+    res.status(400).send('Must specify a type');
+    return;
+  }
   var tempSchemaList = [];
-  var sch = req.query['schema'];
-  console.log(sch);
-  for(var s in schemaList) {
-    if(sch == s) {
+  var sch = req.body.schema;
+  for	(index = 0; index < schemaList.length; index++) {
+    if(sch == schemaList[index]) {
       res.status(400).send('Schema already exists.');
       return;
     }
   }
-  schemaList = schemaList.push(sch);
+  schemaList.push(sch);
+  studentSchema.add({sch:req.body.type});
   // We are in docker. Writing to file doesn't pan out.
   //fs.writeFile('schema.json', JSON.stringify(schemaList));
   res.send("Schema added");
