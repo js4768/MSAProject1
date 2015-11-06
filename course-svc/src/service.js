@@ -28,7 +28,7 @@ console.log("Connect to Mongodb at "+mongodb_ip);
 
 //course
 var courseJSON = JSON.parse(fs.readFileSync('course_schema.json', 'utf8'));
-var courseSchema = new mongoose.Schema(mongoose_gen.convert(courseJSON));
+var courseSchema = new mongoose.Schema(mongoose_gen.convert(courseJSON)，{strict:false});
 var schemaList = [];  // a list to store all the schema in memory
 for(var name in courseJSON) {
   schemaList.push(name);
@@ -149,14 +149,17 @@ app.get('/course/info', function (req, res) {
     return;
   }
   
-  Course.find({id:req.query['id']}, function (err, result) {
+  var fields = '';
+  for	(index = 0; index < schemaList.length; index++) {
+    fields += schemaList[index]+' ';
+  }
+  Student.find({id:req.query['id']}, fields, function (err, result) {
     if(err) {
-      console.error("/course/info failed with course id "+id);
+      console.error("/student/info failed with student id "+id);
       res.status(500).send("Internal errors");
       return;
     }
     res.send(result);
-
   });
 });
 
@@ -335,16 +338,20 @@ app.get('/course/addSchema', function (req, res) {
     res.status(400).send('Must have a schema field');
     return;
   }
+  if(req.body.type == null) {
+    res.status(400).send('Must specify a type');
+    return;
+  }
   var tempSchemaList = [];
-  var sch = req.query['schema'];
-  console.log(sch);
-  for(var s in schemaList) {
-    if(sch == s) {
+  var sch = req.body.schema;
+  for	(index = 0; index < schemaList.length; index++) {
+    if(sch == schemaList[index]) {
       res.status(400).send('Schema already exists.');
       return;
     }
   }
-  schemaList = schemaList.push(sch);
+  schemaList.push(sch);
+  courseSchema.add({sch:req.body.type});
   // We are in docker. Writing to file doesn't pan out.
   //fs.writeFile('schema.json', JSON.stringify(schemaList));
   res.send("Schema added");
