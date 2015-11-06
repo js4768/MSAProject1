@@ -22,5 +22,10 @@ API:
 
 	All fields must be included in the database’s schema. If not, return 400. Must provide a valid student ID.
 
+/student/addSchema POST
+	This API is called to add a new field to schema.
+
+	The request body must contain a schema name (schema) and its type (type). Type should be restricted to ‘string’, ’number’, ‘bool’.
+
 /student/getall GET
 	This API returns all student info. No parameter needed.
