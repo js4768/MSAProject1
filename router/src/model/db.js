@@ -30,7 +30,8 @@ var RoutingTableSchema = new mongoose.Schema({
 	keyLowerValue: String,
 	keyUpperValue: String,
 	ip: String,
-	port: String
+	port: String,
+	redirectAll: Boolean
 });
 
 mongoose.model('RoutingTable', RoutingTableSchema);

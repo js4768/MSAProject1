@@ -4,6 +4,21 @@ var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
 var redirectUtil = require('./redirectUtil');
 var routeUtil = require('./routeUtil');
+var xml2js = require('xml2js');
+var fs = require('fs');
+var _ = require('underscore');
+
+var xmlParser = new xml2js.Parser({explicitArray : false});
+
+fs.readFile(__dirname + '/config.xml', function(err, data) {
+  xmlParser.parseString(data, function (err, xmlData) {
+  	var routes = xmlData['config']['route'];
+  	_.each(routes, function(route) {
+  		// console.log('route = ' + JSON.stringify(route));
+  		routeUtil.createRoute(route, null, 1);
+  	});
+  });
+});
 
 var app = express();
 app.use(bodyParser.json());
@@ -11,7 +26,7 @@ app.use(bodyParser.json());
 var router = express.Router();
 
 router.post('/router/add', function(req, res) {
-	routeUtil.createRoute(req, res);
+	routeUtil.createRoute(req, res, 0);
 });
 
 router.post('/router/delete', function(req, res) {
