@@ -18,11 +18,12 @@ var util = require('util');
 var fs = require('fs');
 var fileName = 'config.xml';
 var parser = new xml2js.Parser();
+
+var modelIndex = 0;
 // For localhost testing
-// var mongodb_ip = 'mongodb://0.0.0.0:27017';
+var mongodb_ip = 'mongodb://0.0.0.0:27017';
 // Docker Environment
-var mongodb_ip = 'mongodb://'+process.env.MONGO_PORT_27017_TCP_ADDR+':'
-  +process.env.MONGO_PORT_27017_TCP_PORT;
+/*var mongodb_ip = 'mongodb://'+process.env.MONGO_PORT_27017_TCP_ADDR+':'  +process.env.MONGO_PORT_27017_TCP_PORT;
 fs.readFile(__dirname + '/config.xml', function(err, data) {
   parser.parseString(data, function (err, result) {
     mongodb_ip += result.config.mongodb;
@@ -30,7 +31,7 @@ fs.readFile(__dirname + '/config.xml', function(err, data) {
     console.log("Connected to mongodb: "+mongodb_ip);
   });
 });
-
+*/
 var connectWithRetry = function() {
   return mongoose.connect(mongodb_ip, function(err) {
     if (err) {
@@ -47,7 +48,7 @@ var schemaList = [];  // a list to store all the schema in memory
 for(var name in studentJSON) {
   schemaList.push(name);
 }
-var Student = mongoose.model('Student', studentSchema);
+var Student = mongoose.model('Student', studentSchema);//don't put name as Student+modelIndex initially... does not work
 
 
 
@@ -69,10 +70,35 @@ app.post('/student/add', function (req, res) {
     res.status(400).send('Firstname and lastname must be valid');
     return;
   }
-  var firstname = req.body.firstname,
-      lastname = req.body.lastname,
-      id = id_generator.generate_id(firstname, lastname);
+
+
+  //for every property in req.body
+  for(var propName in req.body) {
+    
+    if (req.body.hasOwnProperty(propName)) {
+      var valid = false;
+      //console.log(propName, req.body[propName]); //property name and value
+      //check if propName exists in schemaList
+      for(var attribute in schemaList) {
+        if(propName == schemaList[attribute]) {
+          valid = true;
+          break;
+        }
+      }
+
+      if(!valid) {//propName was not present in schemaList
+        console.error("/student/add received incorrect field. Field does not exist in schema: "+propName);
+        res.status(400).send("Bad request format" + "/student/add received incorrect field. Field does not exist in schema: "+propName);
+        return;
+      }
+    }
+  }
+
+  //all attributes in body are present in schemaList
+  //add data to DB
+  var id = id_generator.generate_id(req.body.firstname, req.body.lastname);
   
+  //gets a unique ID
   var duplicate = function (id, Student) {
     Student.find({id:id}, function (err, result) {
       if(result.length>0) return false;
@@ -81,19 +107,33 @@ app.post('/student/add', function (req, res) {
   };
   
   while(duplicate(id, Student)) {
-    id = id_generator.generate_id(firstname, lastname);
+    id = id_generator.generate_id(req.body.firstname, req.body.lastname);
   }
 
-  var newStudent = new Student({firstname:firstname, lastname:lastname, id:id});
-  newStudent.save(function (err) {
+  modelIndex++;
+  Student = mongoose.model('Student'+modelIndex, studentSchema);
+  var data = new Student();
+  //console.log(studentSchema);
+  for(var propName in req.body){
+
+    data[propName] = req.body[propName];
+
+  }
+  console.log(data);
+
+  //save the student
+  //var newStudent = new Student({firstname:firstname, lastname:lastname, id:id});
+  data.save(function (err) {
     if(err) {
-      console.log("Saving to db failed. Student: "+firstname+" "+lastname);
+      console.log("Saving to db failed. Student: "+req.body.firstname+" "+req.body.lastname);
       res.send("Failed to save student to database.");
       return;
     }
   });
-  res.send("A new student is added to database. Firstname: "+firstname+" Lastname: "+lastname+" ID: "+id);
+  res.send("A new student is added to database. ID: "+id);
 });
+
+
 
 app.get('/student/info', function (req, res) {
   if(req.query == null) {
@@ -119,36 +159,6 @@ app.get('/student/info', function (req, res) {
   });
 });
 
-app.delete('/student/delete', function (req, res) {
-  if(req.body == null) {
-    res.status(400).send('Request body is empty!');
-    return;
-  }
-  if(req.body.id == null) {
-    res.status(400).send('Must provide student ID');
-    return;
-  }
-  var id = req.body.id;
-  if(id.length != 6) {
-    res.status(400).send('Invalid student ID');
-    return;
-  }
-  Student.remove({id:id}, function (err) {
-    if (err) {
-      console.error("/student/delete failed with student id "+id);
-      res.status(500).send("Internal errors");
-      return;
-    }
-  });
-
-
-
-
-exchange.publish(id, { key: 'deleteStudent' });//send student ID that was deleted
-//exchange.on('drain', process.exit); //write this to end the service
-
-  res.send("Delete student "+id);
-});
 
 app.post('/student/update', function (req, res) {
   if(req.body == null) {
@@ -194,6 +204,58 @@ app.post('/student/update', function (req, res) {
   });
 });
 
+//POST - schema, type
+app.post('/student/deleteSchema', function (req, res) {
+  if(req.body==null) {
+    res.status(400).send('Must have a parameter');
+    return;
+  }
+  if(req.body.schema == null) {
+    res.status(400).send('Must have a schema field');
+    return;
+  }
+  if(req.body.type == null) {
+    res.status(400).send('Must specify a type');
+    return;
+  }
+  var tempSchemaList = [];
+  var sch = req.body.schema;
+  
+  var schemaExists = false;
+
+  for (index = 0; index < schemaList.length; index++) {
+    if(sch == schemaList[index]) {
+      schemaExists = true;
+      break;
+    }
+  }
+  if(!schemaExists){
+    res.status(400).send('Column does not exist in schema: '+sch);
+    return;
+  }
+
+  //if schema exists
+  var index = schemaList.indexOf(sch);
+  if (index > -1) {
+      schemaList.splice(index, 1);
+  }
+
+
+
+  var key = sch;
+  delete studentJSON[key];
+  console.log(studentJSON);
+
+  studentSchema = new mongoose.Schema(mongoose_gen.convert(studentJSON), {strict:false});
+  
+  // We are in docker. Writing to file doesn't pan out.
+  fs.writeFile('schema.json', JSON.stringify(studentJSON));
+  res.send("Schema removed: " +sch);
+
+});
+
+
+//POST - schema, type
 app.post('/student/addSchema', function (req, res) {
   if(req.body==null) {
     res.status(400).send('Must have a parameter');
@@ -216,10 +278,15 @@ app.post('/student/addSchema', function (req, res) {
     }
   }
   schemaList.push(sch);
-  studentSchema.add({sch:req.body.type});
+  studentJSON[sch] = req.body.type;
+
+  console.log(studentJSON);
+  studentSchema = new mongoose.Schema(mongoose_gen.convert(studentJSON), {strict:false});
+  
   // We are in docker. Writing to file doesn't pan out.
-  //fs.writeFile('schema.json', JSON.stringify(schemaList));
-  res.send("Schema added");
+  fs.writeFile('schema.json', JSON.stringify(studentJSON));
+  res.send("Schema added: " +sch);
+
 });
 
 app.get('/student/getall', function (req, res) {
