@@ -19,17 +19,18 @@ var fileName = 'config.xml';
 var parser = new xml2js.Parser();
 
 // For localhost testing
-var mongodb_ip = 'mongodb://0.0.0.0:27017';
+//var mongodb_ip = 'mongodb://0.0.0.0:27017';
 // Docker Environment
-/*var mongodb_ip = 'mongodb://'+process.env.MONGO_PORT_27017_TCP_ADDR+':'  +process.env.MONGO_PORT_27017_TCP_PORT;
-fs.readFile(__dirname + '/config.xml', function(err, data) {
+var mongodb_ip = 'mongodb://'+process.env.MONGO_PORT_27017_TCP_ADDR+':'  +process.env.MONGO_PORT_27017_TCP_PORT;
+
+/*fs.readFile(__dirname + '/config.xml', function(err, data) {
   parser.parseString(data, function (err, result) {
     mongodb_ip += result.config.mongodb;
     mongoose.connect(mongodb_ip);
     console.log("Connected to mongodb: "+mongodb_ip);
   });
-});*/
-
+});
+*/
 var connectWithRetry = function() {
   return mongoose.connect(mongodb_ip, function(err) {
     if (err) {
@@ -155,6 +156,7 @@ app.post('/course/add', function (req, res) {
     data[propName] = req.body[propName];
 
   }
+  data.id = id;
   console.log(data);
 
   //save the course
