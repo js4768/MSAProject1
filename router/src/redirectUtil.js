@@ -2,12 +2,12 @@ var _ = require('underscore');
 var unirest = require('unirest');
 
 var findRoute = function(routes, keyValue) {
-	_.find(routes, function(route) {
+	return _.find(routes, function(route) {
 		if (route.keyLowerValue <= keyValue
 			&& route.keyUpperValue >= keyValue) {
 			return route;
 		};
-	})
+	});
 };
 
 var getRedirect = function(url, res, dontSendResponseBack) {
@@ -83,14 +83,22 @@ module.exports.redirect = function(RoutingTable, req, res, httpMethod) {
 		var keyName = routes[0].keyName;
 		console.log('keyName found = ' + keyName);
 
-		if(req.body[keyName] == null || 
-			req.body[keyName] == '') {
-			console.log('Bad Input: Routing Key Not Found');
-			res.status(404).send('Bad Input: Routing Key Not Found');
-			return;
+		if(httpMethod == 'get') {
+			if(req.query == null || req.query[keyName] == null || req.query[keyName] == '') {
+				console.log('Bad Input: Routing Key Not Found');
+				res.status(404).send('Bad Input: Routing Key Not Found');
+				return;
+			} 
+		} else {
+			if(req.body[keyName] == null || 
+				req.body[keyName] == '') {
+				console.log('Bad Input: Routing Key Not Found');
+				res.status(404).send('Bad Input: Routing Key Not Found');
+				return;
+			}
 		}
 
-		var keyValue = (req.body[keyName]).charAt(0);
+		var keyValue = httpMethod == 'get' ? (req.query[keyName]).charAt(0) : (req.body[keyName]).charAt(0);
 		console.log('keyValue = ' + keyValue);
 
 		var route = findRoute(routes, keyValue);
