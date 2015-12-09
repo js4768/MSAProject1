@@ -47,7 +47,13 @@ var redirectToRoute = function(route, req, res, httpMethod, dontSendResponseBack
 	}
 
 	console.log('route found = ' + JSON.stringify(route));
-	var url = 'http:\/\/' + route.ip + ":" + route.port + req.path;
+  var url = 'http:\/\/' + route.ip + ":" + route.port + req.path;
+  if(httpMethod == 'get') {
+    url += '?';
+    for(var propName in req.query) {
+      url += propName+'='+req.query[propName]+'&';
+    }
+  }
 	console.log('redirecting to = ' + url);
 	createRedirectRequest(url, req, res, httpMethod, dontSendResponseBack);
 };
