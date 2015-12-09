@@ -19,8 +19,8 @@
             <service>student</service>
             <api>add</api>
             <keyName>firstname</keyName>
-            <keyLowerValue>a</keyLowerValue>
-            <keyUpperValue>c</keyUpperValue>
+            <keyLowerValue>d</keyLowerValue>
+            <keyUpperValue>f</keyUpperValue>
             <ip>192.168.99.100</ip>
             <port>43000</port>
             <redirectAll>0</redirectAll>
@@ -32,8 +32,47 @@
             <service>student</service>
             <api>add</api>
             <keyName>firstname</keyName>
+            <keyLowerValue>g</keyLowerValue>
+            <keyUpperValue>j</keyUpperValue>
+            <ip>192.168.99.100</ip>
+            <port>44000</port>
+            <redirectAll>0</redirectAll>
+        </body>
+    </route>
+    <route>
+        <body>
+            <httpMethod>delete</httpMethod>
+            <service>student</service>
+            <api>delete</api>
+            <keyName>id</keyName>
             <keyLowerValue>a</keyLowerValue>
             <keyUpperValue>c</keyUpperValue>
+            <ip>192.168.99.100</ip>
+            <port>42000</port>
+            <redirectAll>0</redirectAll>
+        </body>
+    </route>
+    <route>
+        <body>
+            <httpMethod>delete</httpMethod>
+            <service>student</service>
+            <api>delete</api>
+            <keyName>id</keyName>
+            <keyLowerValue>d</keyLowerValue>
+            <keyUpperValue>f</keyUpperValue>
+            <ip>192.168.99.100</ip>
+            <port>43000</port>
+            <redirectAll>0</redirectAll>
+        </body>
+    </route>
+    <route>
+        <body>
+            <httpMethod>delete</httpMethod>
+            <service>student</service>
+            <api>delete</api>
+            <keyName>id</keyName>
+            <keyLowerValue>g</keyLowerValue>
+            <keyUpperValue>j</keyUpperValue>
             <ip>192.168.99.100</ip>
             <port>44000</port>
             <redirectAll>0</redirectAll>
@@ -58,8 +97,8 @@
             <service>student</service>
             <api>info</api>
             <keyName>id</keyName>
-            <keyLowerValue>a</keyLowerValue>
-            <keyUpperValue>c</keyUpperValue>
+            <keyLowerValue>d</keyLowerValue>
+            <keyUpperValue>f</keyUpperValue>
             <ip>192.168.99.100</ip>
             <port>43000</port>
             <redirectAll>0</redirectAll>
@@ -71,8 +110,8 @@
             <service>student</service>
             <api>info</api>
             <keyName>id</keyName>
-            <keyLowerValue>a</keyLowerValue>
-            <keyUpperValue>c</keyUpperValue>
+            <keyLowerValue>g</keyLowerValue>
+            <keyUpperValue>j</keyUpperValue>
             <ip>192.168.99.100</ip>
             <port>44000</port>
             <redirectAll>0</redirectAll>
@@ -97,8 +136,8 @@
             <service>student</service>
             <api>update</api>
             <keyName>id</keyName>
-            <keyLowerValue>a</keyLowerValue>
-            <keyUpperValue>c</keyUpperValue>
+            <keyLowerValue>d</keyLowerValue>
+            <keyUpperValue>f</keyUpperValue>
             <ip>192.168.99.100</ip>
             <port>43000</port>
             <redirectAll>0</redirectAll>
@@ -110,8 +149,8 @@
             <service>student</service>
             <api>update</api>
             <keyName>id</keyName>
-            <keyLowerValue>a</keyLowerValue>
-            <keyUpperValue>c</keyUpperValue>
+            <keyLowerValue>g</keyLowerValue>
+            <keyUpperValue>j</keyUpperValue>
             <ip>192.168.99.100</ip>
             <port>44000</port>
             <redirectAll>0</redirectAll>
